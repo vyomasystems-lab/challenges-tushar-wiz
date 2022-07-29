@@ -4,7 +4,7 @@ TOPLEVEL_LANG ?= verilog
 
 PWD=$(shell pwd)
 
-VERILOG_SOURCES = $(PWD)/qmults.v               # provide your design path
+VERILOG_SOURCES = $(PWD)/qmults_bugged.v               # provide your design path
 
 TOPLEVEL := qmults        	# design file
 MODULE   := test_qmults     # test file

@@ -46,9 +46,13 @@ async def mult_range(dut):
         
         binaryString = Fxp(A_fxp * B_fxp ,False,31,15)
 
+        
         if(binaryString.status['overflow'] == True):
-            assert dut.o_overflow.value == 1, "Overflow Not Detected\n"
+            errorString = "Overflow not Detected Error\nA={A}\nB={B}\n".format(A=dut.i_multiplicand.value.binstr, B=dut.i_multiplier.value.binstr)
+            assert dut.o_overflow.value == 1, errorString
         else:
             finalValString = (str(int(A_list[i] * B_list[i] < 0))+binaryString.bin())
-            errorString = "Value or Sign Error\nEXP={EXP}\nSIM={SIM}\n".format(EXP=finalValString, SIM=dut.o_result_out.value.binstr)
+            errorString = "Value or Sign Error\nA={A}\nB={B}\nEXP={EXP}\nSIM={SIM}\n".format(A=dut.i_multiplicand.value.binstr, B=dut.i_multiplier.value.binstr, EXP=finalValString, SIM=dut.o_result_out.value.binstr)
+            print("SIM = "+ dut.o_result_out.value.binstr)
+            print("EXP = "+ finalValString)
             assert dut.o_result_out.value.binstr ==  finalValString, errorString
