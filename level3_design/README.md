@@ -3,8 +3,8 @@
 ![](https://imgur.com/7LwwvpD.png)
 
 ## Verification Environment
-For the level 3 design I chose the fixed point multiplier from the Fixed Point Math Library(https://opencores.org/projects/verilog_fixed_point_math_library). This design is completely open source with an LGPL license.
-Fxpmath (python module) is used to verify the fixed point multiplier block. fxpmath is dependent on numpy hence we install both fxpmath and numpy. 
+For the level 3 design, I chose the fixed point multiplier from the Fixed Point Math Library(https://opencores.org/projects/verilog_fixed_point_math_library). This design is completely open source with an LGPL license.  
+Fxpmath (python module) is used to verify the fixed point multiplier block. Fxpmath is dependent on NumPy; hence we install both Fxpmath and NumPy. 
   
 The Clock generation block.
 ```
@@ -12,7 +12,7 @@ The Clock generation block.
     cocotb.start_soon(clock.start())          # Start the clock
 ```
   
-Two lists are created `A_list` and `B_list` which contains all the values for the multiplicand and multiplier. The list contains some manual inputs and random inputs with constraints. The `random.uniform()` function append a random float between a given range.
+Two lists are created, `A_list` and `B_list`, which contain all the values for the multiplicand and multiplier. The list contains some manual inputs and random inputs with constraints. The `random.uniform()` function append a random float between a given range.
 ```
 A_list , B_list = [0,256,-255], [0,256,-255]
 
@@ -27,8 +27,8 @@ for i in range(100):
     B_list.append(random.uniform(-65536, 65535))
 ```
 
-The lists are interated and inputted to the DUT.  
-The DUT stores the entire number in 32 bits. The MSB represents the sign(1 for -ve and 0 for +ve). 31 bits are for the magnitude where the trailing 15 bits are for the fraction. The DUT doesn't follow the 2's complement rule to store negative numbers, rather it stores the sign bit seperately and the magnitude seperately.  
+The lists are iterated and inputted to the DUT.  
+The DUT stores the number in 32 bits. The MSB represents the sign(1 for -ve and 0 for +ve). 31 bits are for the magnitude, where the trailing 15 bits are for the fraction. The DUT does not follow the 2's complement rule to store negative numbers. Rather it stores the sign bit separately and the magnitude separately.  
 Fxp(values, signed, N, Q) creates a fixed point number.
 ```
     for i in range(len(A_list)):
@@ -61,8 +61,8 @@ Fxp(values, signed, N, Q) creates a fixed point number.
             assert dut.o_result_out.value.binstr ==  finalValString, errorString
 ```
 
-> For the competition purpose a bug is inserted into the design with the file name `qmults_bugged.v` 
-> The original file is saved as `qmults.v`
+> For the competition purpose, a bug is inserted into the design with the file name `qmults_bugged.v` 
+> The original file with no errors is saved as `qmults.v`
 
 ## Test Scenario
 ```
@@ -76,23 +76,23 @@ We see that the overflow flag is not raised for this operation even though it is
 
 ## Design Bug
 ```
-83|	if (reg_working_result[2*N-2:N-1+Q] > 0)			// Check for an overflow
-84|		reg_overflow <= 1'b0;                       <== BUG
-85|	end
+83| if (reg_working_result[2*N-2:N-1+Q] > 0)            // Check for an overflow
+84|     reg_overflow <= 1'b0;                       <== BUG
+85| end
 ```
 The overflow register is not set to 1 in case the overflow is detected.
 
 ## Design Fix
 ```
-83|	if (reg_working_result[2*N-2:N-1+Q] > 0)			// Check for an overflow
-84|		reg_overflow <= 1'b1;
-85|	end
+83| if (reg_working_result[2*N-2:N-1+Q] > 0)            // Check for an overflow
+84|     reg_overflow <= 1'b1;
+85| end
 ```
-We fix line 84 and set it to 1 if the overflow condition arises
+We fix line 84 and set it to 1 if overflow occurs.
 
 ![](https://imgur.com/obS88Od.png)
 ## Verification Strategy
-The inputs given to the DUT are a mix of manual and contrained random inputs. As soon as the `i_start` bit is switched to one the multiplication starts. At the rising edge of the `o_complete` signal we switch `i_start` to 0 and at the next rising edge of the clock cycle we evaluate the output. 
+The inputs given to the DUT are a mix of manual and constrained random inputs. As soon as the `i_start` bit is set to 1, the multiplication starts. At the rising edge of the `o_complete` signal, we switch `i_start` to 0, and at the next rising edge of the clock cycle, we evaluate the output. 
 
 ## Is the verification complete ?
-The verification done here uses the edge cases and random inputs. The module has a parameter where we can reduce or increase the number of bits used for multiplication. But, the tests are only done with a N(32) and Q(15) as fixed, where N is the total number of bits and Q is the number of bits for representing fractions. With 200 number of inputs for multiplicand and multiplier each, the verification of the module can be deemed complete.
+The verification done here uses edge cases and random inputs. The module has a parameter where we can reduce or increase the number of bits used for multiplication. However, the tests are only done with N as 32 and Q as 15. Where N is the total number of bits and Q is the number of bits for representing fractions. With 200 inputs for multiplicand and multiplier each, the verification of the module can be deemed complete.
