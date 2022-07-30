@@ -37,7 +37,7 @@ test_0110011_R4type
 test_0010011_FSRI_SHFLI_UNSHFLI
 ```
 All of these tests have slightly different codes, but by the majority, all of these tests are coded similarly.
-Hence we will only be evaluating `test_0110011_Rtype` in this document (other functions can be understood by reading the comments in the source code itself).
+Hence we will only be evaluating `test_0110011_Rtype` in this document (other functions can be understood by reading the comments in the source code itself).  
 `opcode` stores the opcode for the group of instructions
 ```
 opcode = 0b0110011
@@ -49,9 +49,9 @@ yield Timer(10)
 dut.RST_N.value <= 1
 ```
 
-`test_vals` contains all the values inputted to the DUT as operands.
-`operations` is a list that contains all the instructions that need to be executed.
-`errors` list stores all the errors when the testbench runs.
+`test_vals` contains all the values inputted to the DUT as operands.  
+`operations` is a list that contains all the instructions that need to be executed.  
+`errors` list stores all the errors when the testbench runs.  
 `testInstructions` String that is appended to the `errors.txt` file to indicate the Instructions on which the tests were performed.
 ```
     test_vals = [0x0,0x1,0x55555555,0xAAAAAAAA,0x7fffffff,0xfffffffe,0xfffffff]
@@ -66,8 +66,8 @@ dut.RST_N.value <= 1
     testInstructions = "ANDN ORN XNOR ... "
     errors = list()
 ```
-The **for** loops iterate all the instructions stored in `operations` and all the values stored in `test_vals`, and input it to the DUT. Src1 and Src2 both iterate over `test_vals` while Src3 which is not used by Rtype instructions, is fed with random values to ensure the design works fine.
-After every calculation, the expected and actual values are equated; if not, they get appended to the `errors` list.
+The **for** loops iterate all the instructions stored in `operations` and all the values stored in `test_vals`, and input it to the DUT. Src1 and Src2 both iterate over `test_vals` while Src3 which is not used by Rtype instructions, is fed with random values to ensure the design works fine.  
+After every calculation, the expected and actual values are equated; if not, they get appended to the `errors` list.  
 At the end the `errors` list is passed to the `errorWrite` function which writes all the errors to the `errors.txt` file.
 ```
 for op in operations:
@@ -157,6 +157,9 @@ DUT OUTPUT    EXPECTED OUTPUT    SRC1        SRC2        SRC3                   
 All of these are errors are logged for the **`ANDN`** instruction
 
 ![](https://imgur.com/bRAGCqF.png)
+
+## Design bug
+As per the tests the **`ANDN`** instruction contains a design bug.
 
 ## Verification Strategy
 To reduce the testing time, the inputs generated to the DUT are all edge cases and are not random inputs. Otherwise, the real-time execution would take a tremendous amount of time. The same inputs are given to the DUT and the model python file and are equated at the end.
