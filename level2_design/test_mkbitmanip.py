@@ -15,12 +15,12 @@ from model_mkbitmanip import *
 
 import os
 
-if os.path.exists("errors.txt"):
+if os.path.exists("errors.txt"):                #checks if file is already present from previous run
   os.remove("errors.txt")
 else:
   print("The file does not exist") 
 
-f = open("errors.txt","x")
+f = open("errors.txt","x")                      #creates a new file
 f.close()
 
 def Rtype(funct7, funct3, opcode):
@@ -35,7 +35,7 @@ def I_func_type(funct7, imm_value1, func3, opcode):
 def R4type(funct2,funct3,opcode):
     return ((funct2 << 25)|(funct3 << 12)|(opcode))
 
-def errorLog(dut, dut_output, expected_mav_putvalue, instr):
+def errorLog(dut, dut_output, expected_mav_putvalue, instr):                
     errorEntry = list()
     errorEntry.append(f'{hex(dut_output)}')
     errorEntry.append(f'{hex(expected_mav_putvalue)}')
@@ -47,18 +47,18 @@ def errorLog(dut, dut_output, expected_mav_putvalue, instr):
     return errorEntry
 
 def errorWrite(funcs_logged, errorList):
-    r = open("errors.txt", 'a')
+    r = open("errors.txt", 'a')                     #opens file in append mode
     r.write("\n\n"+funcs_logged+"\n\n")
 
-    if(len(errorList) != 0):
-        r.write(tabulate(errorList,headers=["DUT OUTPUT","EXPECTED OUTPUT","SRC1","SRC2","SRC3","INST"]))
+    if(len(errorList) != 0):                        
+        r.write(tabulate(errorList,headers=["DUT OUTPUT","EXPECTED OUTPUT","SRC1","SRC2","SRC3","INST"]))   #write the errors in the table
         r.close()
-        return False
+        return False                                #if error list not empty we assert False
     else:
-        r.write(tabulate([],headers=["DUT OUTPUT","EXPECTED OUTPUT","SRC1","SRC2","SRC3","INST"]))
+        r.write(tabulate([],headers=["DUT OUTPUT","EXPECTED OUTPUT","SRC1","SRC2","SRC3","INST"]))          #write empty table
         r.write("\nNO Errors Detected\n")
         r.close()
-        return True
+        return True                                 #if error list is empty we assert True
 
 # Clock Generation
 @cocotb.coroutine
@@ -119,12 +119,12 @@ def test_0110011_Rtype(dut):
 
     errors = list()
 
-    for op in operations:
-        for src1_val in test_vals:
-            for src2_val in test_vals:
+    for op in operations:                                       #iterate operations
+        for src1_val in test_vals:                              #iterate vals from test_vals
+            for src2_val in test_vals:                          #iterate vals from test_vals
                 mav_putvalue_src1 = src1_val
                 mav_putvalue_src2 = src2_val
-                mav_putvalue_src3 = random.randint(0, (1<<32)-1)
+                mav_putvalue_src3 = random.randint(0, (1<<32)-1) #random input
                 mav_putvalue_instr = op
 
                 expected_mav_putvalue = bitmanip(mav_putvalue_instr, mav_putvalue_src1, mav_putvalue_src2, mav_putvalue_src3)
@@ -156,9 +156,8 @@ def test_0010011_Itype(dut):
 
     operations = list()
 
-    src1_vals = test_vals
-    imm = [0b0000000,0b0000001,0b0101010,0b1010101,0b0111111,0b1111110,0b1111111]
-
+    imm = [0b0000000,0b0000001,0b0101010,0b1010101,0b0111111,0b1111110,0b1111111]       #immediate values to be tested on
+                            #funct7  #imm #funct3
     operations.append(Itype(0b00100, 0b0, 0b001, opcode))    # SLOI
     operations.append(Itype(0b00100, 0b0, 0b101, opcode))    # SROI
     operations.append(Itype(0b01100, 0b0, 0b101, opcode))    # RORI
@@ -175,12 +174,12 @@ def test_0010011_Itype(dut):
 
     for op in operations:
         for src1_val in test_vals:
-            for imm_val in imm:
+            for imm_val in imm:                                         #iterating immediate values
                 mav_putvalue_src1 = src1_val
-                mav_putvalue_src2 = random.randint(0, (1<<32)-1)
-                mav_putvalue_src3 = random.randint(0, (1<<32)-1)
+                mav_putvalue_src2 = random.randint(0, (1<<32)-1)        #
+                mav_putvalue_src3 = random.randint(0, (1<<32)-1)        #Putting Random 32bit values   
 
-                mav_putvalue_instr = op|(imm_val<<20)
+                mav_putvalue_instr = op|(imm_val<<20)                   #adding immediate values to the operation
                 expected_mav_putvalue = bitmanip(mav_putvalue_instr, mav_putvalue_src1, mav_putvalue_src2, mav_putvalue_src3)
                 
                 dut.mav_putvalue_src1.value = mav_putvalue_src1
@@ -192,7 +191,9 @@ def test_0010011_Itype(dut):
                 yield Timer(1)
 
                 dut_output = dut.mav_putvalue.value
-
+                # print(dut_output)
+                # print(expected_mav_putvalue)                          #for testing purposes
+                # print()
                 if dut_output != expected_mav_putvalue:
                     errors.append(errorLog(dut, dut_output, expected_mav_putvalue,dut.mav_putvalue_instr.value.binstr))
     assert errorWrite(testInstructions, errors)
@@ -230,8 +231,8 @@ def test_0010011_Ifunc(dut):
     for op in operations:
         for src1_val in test_vals:
             mav_putvalue_src1 = src1_val
-            mav_putvalue_src2 = random.randint(0, (1<<32)-1)
-            mav_putvalue_src3 = random.randint(0, (1<<32)-1)
+            mav_putvalue_src2 = random.randint(0, (1<<32)-1)            #
+            mav_putvalue_src3 = random.randint(0, (1<<32)-1)            #Putting Random 32 bit values
 
             mav_putvalue_instr = op
             expected_mav_putvalue = bitmanip(mav_putvalue_instr, mav_putvalue_src1, mav_putvalue_src2, mav_putvalue_src3)
@@ -272,9 +273,9 @@ def test_0110011_R4type(dut):
     errors = list()
 
     for op in operations:
-        for src1_val in test_vals:
-            for src2_val in test_vals:
-                for src3_val in test_vals:
+        for src1_val in test_vals:                      #
+            for src2_val in test_vals:                  #
+                for src3_val in test_vals:              # Iterating for src1 src2 and src3 over test_vals
                     mav_putvalue_src1 = src1_val
                     mav_putvalue_src2 = src2_val
                     mav_putvalue_src3 = src3_val
@@ -324,7 +325,7 @@ def test_0010011_FSRI_SHFLI_UNSHFLI(dut):
                     mav_putvalue_src1 = src1_val
                     mav_putvalue_src2 = random.randint(0, (1<<32)-1)
                     mav_putvalue_src3 = src3_val
-                    mav_putvalue_instr = op|(imm_val << 20)
+                    mav_putvalue_instr = op|(imm_val << 20)                 #adding imm values to ther operation
                     expected_mav_putvalue = bitmanip(mav_putvalue_instr, mav_putvalue_src1, mav_putvalue_src2, mav_putvalue_src3)
                     
                     dut.mav_putvalue_src1.value = mav_putvalue_src1
